@@ -1,0 +1,17 @@
+# Lefthook config — git hooks for cinchcli/cinch.vim
+# Install: brew install lefthook && lefthook install
+#
+# vint is optional — install with: pip install vim-vint
+# If vint is not installed the hook is skipped.
+
+pre-commit:
+  parallel: true
+  commands:
+    vint:
+      glob: "{plugin/*.vim,autoload/**/*.vim,doc/*.txt,ftplugin/*.vim}"
+      run: |
+        if command -v vint >/dev/null 2>&1; then
+          vint {staged_files}
+        else
+          echo "vint not installed — skipping (pip install vim-vint)"
+        fi
