@@ -1,5 +1,5 @@
 " cinch.vim - Vim/Neovim plugin for Cinch remote clipboard
-" https://github.com/cinch-cli/cinch.vim
+" https://github.com/cinchcli/cinch.vim
 
 if exists('g:loaded_cinch') | finish | endif
 let g:loaded_cinch = 1

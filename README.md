@@ -13,12 +13,12 @@ Yank in Vim → available on any machine running Cinch.
 
 **lazy.nvim**
 ```lua
-{ "cinch-cli/cinch.vim" }
+{ "cinchcli/cinch.vim" }
 ```
 
 **vim-plug**
 ```vim
-Plug 'cinch-cli/cinch.vim'
+Plug 'cinchcli/cinch.vim'
 ```
 
 ## Usage

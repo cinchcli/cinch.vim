@@ -27,12 +27,12 @@ the latest clip back into a register with a single command.
 
 lazy.nvim ~
 >lua
-  { "cinch-cli/cinch.vim" }
+  { "cinchcli/cinch.vim" }
 <
 
 vim-plug ~
 >vim
-  Plug 'cinch-cli/cinch.vim'
+  Plug 'cinchcli/cinch.vim'
 <
 
 ==============================================================================
