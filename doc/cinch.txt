@@ -1,0 +1,72 @@
+*cinch.txt*  Vim/Neovim plugin for Cinch remote clipboard
+
+==============================================================================
+CONTENTS                                                        *cinch-contents*
+
+  1. Introduction ......................................... |cinch-intro|
+  2. Requirements ......................................... |cinch-requirements|
+  3. Installation ......................................... |cinch-install|
+  4. Configuration ........................................ |cinch-config|
+  5. Commands ............................................. |cinch-commands|
+
+==============================================================================
+1. INTRODUCTION                                                    *cinch-intro*
+
+cinch.vim integrates the Cinch remote clipboard CLI into Vim and Neovim.
+Yanked text is automatically pushed to your Cinch relay, and you can pull
+the latest clip back into a register with a single command.
+
+==============================================================================
+2. REQUIREMENTS                                             *cinch-requirements*
+
+  - Vim 8.0+ or Neovim 0.5+
+  - cinch CLI installed and authenticated (`cinch auth status`)
+
+==============================================================================
+3. INSTALLATION                                                  *cinch-install*
+
+lazy.nvim ~
+>lua
+  { "cinch-cli/cinch.vim" }
+<
+
+vim-plug ~
+>vim
+  Plug 'cinch-cli/cinch.vim'
+<
+
+==============================================================================
+4. CONFIGURATION                                                  *cinch-config*
+
+*g:cinch_auto_push* (default: 1)
+  Set to 0 to disable automatic push on yank.
+>vim
+  let g:cinch_auto_push = 0
+<
+
+*g:cinch_push_register* (default: '"')
+  Which register triggers auto-push. Default is the unnamed register.
+>vim
+  let g:cinch_push_register = '+'
+<
+
+*g:cinch_binary* (default: 'cinch')
+  Path to the cinch binary if not in PATH.
+>vim
+  let g:cinch_binary = '/usr/local/bin/cinch'
+<
+
+==============================================================================
+5. COMMANDS                                                     *cinch-commands*
+
+:CinchPush                                                        *:CinchPush*
+  Manually push the current unnamed register to the relay.
+
+:CinchPull                                                        *:CinchPull*
+  Pull the latest clip from the relay into the unnamed register.
+
+:CinchToggle                                                    *:CinchToggle*
+  Toggle auto-push on yank on/off.
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:
