@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Fake cinch CLI used by cinch.vim tests.
+# Records argv + stdin to $CINCH_TEST_DIR/calls.log, replies from fixtures.
+set -u
+fixtures="${CINCH_FIXTURES_DIR:?CINCH_FIXTURES_DIR must be set}"
+log="${CINCH_TEST_DIR:?CINCH_TEST_DIR must be set}/calls.log"
+
+stdin=""
+if [ ! -t 0 ]; then
+  stdin="$(cat)"
+fi
+printf '%s\t%s\n' "$*" "$stdin" >> "$log"
+
+cmd="${1:-}"
+sub="${2:-}"
+case "$cmd" in
+  push)
+    : ;;
+  pull)
+    cat "$fixtures/pull-text.txt" ;;
+  list)
+    cat "$fixtures/list.json" ;;
+  devices)
+    cat "$fixtures/devices.txt" ;;
+  auth)
+    [ "$sub" = "status" ] && cat "$fixtures/auth-status.txt" ;;
+  *)
+    echo "fake cinch: unknown command $cmd" >&2
+    exit 1 ;;
+esac
+exit "${CINCH_FAKE_EXIT:-0}"
