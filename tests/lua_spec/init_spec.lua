@@ -30,4 +30,22 @@ describe('cinch (public API)', function()
       assert.is_not_nil(s[k], 'missing key: ' .. k)
     end
   end)
+
+  it('builtin picker opens a floating window with one line per fixture clip', function()
+    vim.g.cinch_picker = 'builtin'
+    require('cinch').pick({})
+    local wins = vim.api.nvim_list_wins()
+    local found_float = false
+    for _, w in ipairs(wins) do
+      local cfg = vim.api.nvim_win_get_config(w)
+      if cfg.relative ~= '' then
+        found_float = true
+        local buf = vim.api.nvim_win_get_buf(w)
+        local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+        assert.are.equal(2, #lines, 'expected 2 fixture rows, got ' .. #lines)
+      end
+    end
+    assert.is_true(found_float, 'expected at least one floating picker window')
+    vim.cmd('close!')
+  end)
 end)
