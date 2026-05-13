@@ -49,3 +49,22 @@ EOF
   [[ "$output" == *"last push"* ]]
   [[ "$output" == *"last pull"* ]]
 }
+
+@test "cinch#statusline reflects last-op state" {
+  cat > "$CINCH_TEST_DIR/scenario.vim" <<'EOF'
+let g:cinch_auto_push = 1
+let g:cinch_last_push = {'at': localtime(), 'bytes': 1, 'status': 'pending', 'error': ''}
+call writefile([cinch#statusline()], g:cinch_test_state_path, 'a')
+let g:cinch_last_push.status = 'error'
+call writefile([cinch#statusline()], g:cinch_test_state_path, 'a')
+let g:cinch_last_push.status = 'ok'
+let g:cinch_auto_push = 0
+call writefile([cinch#statusline()], g:cinch_test_state_path, 'a')
+EOF
+  run_vim "$CINCH_TEST_DIR/scenario.vim"
+  run cat "$CINCH_TEST_DIR/state.json"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"●●●"* ]]
+  [[ "$output" == *"✗"* ]]
+  [[ "$output" == *"off"* ]]
+}

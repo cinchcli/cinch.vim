@@ -33,6 +33,10 @@ command! CinchToggle let g:cinch_auto_push = !g:cinch_auto_push
       \ | echom '[cinch] auto-push ' . (g:cinch_auto_push ? 'enabled' : 'disabled')
 command! CinchStatus call cinch#status()
 
+highlight default link CinchStatusError   ErrorMsg
+highlight default link CinchStatusPending Statement
+highlight default link CinchStatusOff     Comment
+
 " <Plug> mappings (always installed; default maps gated by g:cinch_default_mappings)
 nnoremap <silent> <expr> <Plug>(cinch-push)      cinch#_set_opfunc()
 nnoremap <silent>        <Plug>(cinch-push-line)  :call cinch#push(getline('.'))<CR>

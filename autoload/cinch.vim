@@ -207,3 +207,13 @@ function! cinch#_format_last(state, with_source) abort
   let l:src = a:with_source && !empty(get(a:state, 'source', '')) ? a:state.source . ' · ' : ''
   return l:ago . l:src . a:state.bytes . ' bytes · ' . a:state.status
 endfunction
+
+function! cinch#statusline() abort
+  if !g:cinch_auto_push | return '[cinch off]' | endif
+  let l:p = get(g:, 'cinch_last_push', {})
+  if get(l:p, 'status', '') ==# 'pending' | return '[cinch ●●●]' | endif
+  if get(l:p, 'status', '') ==# 'error' && (localtime() - get(l:p, 'at', 0)) < 10
+    return '[cinch ✗]'
+  endif
+  return ''
+endfunction
