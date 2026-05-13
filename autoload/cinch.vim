@@ -1,3 +1,4 @@
+scriptencoding utf-8
 " autoload/cinch.vim — core push/pull/status.
 
 function! cinch#push(text, ...) abort
@@ -162,7 +163,11 @@ function! cinch#pull_paste(where) abort
   let l:save = getreg('"')
   let l:save_t = getregtype('"')
   try
-    call setreg('"', l:text, 'v')
+    if l:text =~# '\n$'
+      call setreg('"', substitute(l:text, '\n$', '', ''), 'l')
+    else
+      call setreg('"', l:text, 'v')
+    endif
     if a:where ==# 'before'
       silent normal! P
     else
@@ -194,14 +199,14 @@ function! cinch#status() abort
   endif
   let l:auth = substitute(l:raw, '\n', ' ', 'g')
   let l:relay = matchstr(l:raw, 'relay:\s*\zs\S\+')
-  echo "cinch.vim"
-  echo "─────────"
-  echo "auth:        " . (empty(l:auth) ? '(unknown)' : l:auth)
-  echo "relay:       " . (empty(l:relay) ? '(unknown)' : l:relay)
-  echo "default src: " . (empty(g:cinch_default_source) ? '(none)' : g:cinch_default_source)
-  echo "last push:   " . cinch#_format_last(g:cinch_last_push, 0)
-  echo "last pull:   " . cinch#_format_last(g:cinch_last_pull, 1)
-  echo "auto-push:   " . (g:cinch_auto_push ? 'on' : 'off')
+  echo 'cinch.vim'
+  echo '─────────'
+  echo 'auth:        ' . (empty(l:auth) ? '(unknown)' : l:auth)
+  echo 'relay:       ' . (empty(l:relay) ? '(unknown)' : l:relay)
+  echo 'default src: ' . (empty(g:cinch_default_source) ? '(none)' : g:cinch_default_source)
+  echo 'last push:   ' . cinch#_format_last(g:cinch_last_push, 0)
+  echo 'last pull:   ' . cinch#_format_last(g:cinch_last_pull, 1)
+  echo 'auto-push:   ' . (g:cinch_auto_push ? 'on' : 'off')
 endfunction
 
 function! cinch#_format_last(state, with_source) abort

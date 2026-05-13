@@ -1,3 +1,4 @@
+scriptencoding utf-8
 " autoload/cinch/picker.vim — Vim 8 popup/scratch fallback picker.
 " Used by cinch#history() on classic Vim (non-Neovim).
 " Neovim delegates to lua/cinch/init.lua instead.

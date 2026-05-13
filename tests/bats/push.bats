@@ -32,7 +32,7 @@ EOF
   run_vim "$CINCH_TEST_DIR/scenario.vim"
   run cat "$CINCH_TEST_DIR/state.json"
   [ "$status" -eq 0 ]
-  [[ "$output" == *'"status":"ok"'* ]]
+  [[ "$output" =~ \"status\":\ ?\"ok\" ]]
   [[ "$output" =~ \"bytes\":\ ?7 ]]
 }
 
