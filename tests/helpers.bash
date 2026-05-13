@@ -16,7 +16,7 @@ run_vim() {
   local script="$1"
   shift
   local out_state="$CINCH_TEST_DIR/state.json"
-  "${VIM_BIN:-vim}" -Es -u tests/minimal.vim \
+  "${VIM_BIN:-vim}" -Es -u "$BATS_TEST_DIRNAME/../minimal.vim" \
     -c "let g:cinch_test_state_path = '$out_state'" \
     -c "source $script" \
     -c "qa!" "$@" < /dev/null

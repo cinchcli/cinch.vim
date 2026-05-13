@@ -8,6 +8,7 @@ log="${CINCH_TEST_DIR:?CINCH_TEST_DIR must be set}/calls.log"
 stdin=""
 if [ ! -t 0 ]; then
   stdin="$(cat)"
+  stdin="${stdin//$'\n'/\\n}"
 fi
 printf '%s\t%s\n' "$*" "$stdin" >> "$log"
 
@@ -23,7 +24,13 @@ case "$cmd" in
   devices)
     cat "$fixtures/devices.txt" ;;
   auth)
-    [ "$sub" = "status" ] && cat "$fixtures/auth-status.txt" ;;
+    if [ "$sub" = "status" ]; then
+      cat "$fixtures/auth-status.txt"
+    else
+      echo "fake cinch: unknown auth subcommand $sub" >&2
+      exit 1
+    fi
+    ;;
   *)
     echo "fake cinch: unknown command $cmd" >&2
     exit 1 ;;

@@ -14,6 +14,13 @@ teardown() { teardown_cinch_env; }
 }
 
 @test "minimal.vim sources cinch plugin without error" {
-  run "${VIM_BIN:-vim}" -Es -u tests/minimal.vim -c 'qa!' < /dev/null
+  run "${VIM_BIN:-vim}" -Es -u "$BATS_TEST_DIRNAME/../minimal.vim" -c 'qa!' < /dev/null
   [ "$status" -eq 0 ]
+}
+
+@test "multi-line stdin is logged as one row" {
+  printf 'line1\nline2\nline3' | tests/bin/cinch push
+  run calls_count
+  [ "$status" -eq 0 ]
+  [ "$output" -eq 1 ]
 }
