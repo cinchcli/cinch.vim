@@ -22,15 +22,14 @@ function! cinch#push(text) abort
           \ 'on_stderr': function('s:on_error'),
           \ })
   else
-    call job_start([g:cinch_binary, 'push'], {
+    let l:job = job_start([g:cinch_binary, 'push'], {
           \ 'in_io': 'pipe',
-          \ 'in_top': 0,
           \ 'err_cb': function('s:on_error_vim'),
-          \ 'close_cb': function('s:noop'),
-          \ 'callback': function('s:noop'),
+          \ 'exit_cb': function('s:noop'),
           \ })
-          " Feed text via system() for Vim sync simplicity
-    call system(g:cinch_binary . ' push', a:text)
+    let l:ch = job_getchannel(l:job)
+    call ch_sendraw(l:ch, a:text)
+    call ch_close_in(l:ch)
   endif
 endfunction
 
