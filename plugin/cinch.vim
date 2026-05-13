@@ -31,6 +31,10 @@ function! s:on_yank() abort
   if l:reg !=# '' && l:reg !=# g:cinch_push_register | return | endif
   let l:op = has('nvim') ? v:event.operator : 'y'
   if l:op !=# 'y' | return | endif
-  let l:text = has('nvim') ? join(v:event.regcontents, "\n") : getreg(g:cinch_push_register)
+  if has('nvim')
+    let l:text = join(v:event.regcontents, "\n")
+  else
+    let l:text = substitute(getreg(g:cinch_push_register), "\n$", '', '')
+  endif
   call cinch#push(l:text)
 endfunction

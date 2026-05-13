@@ -20,11 +20,13 @@ EOF
 
 @test "case 13: g:cinch_last_push is populated after a successful push" {
   cat > "$CINCH_TEST_DIR/scenario.vim" <<'EOF'
-let g:cinch_sync_push = 1
 call setline(1, ['payload'])
 let g:cinch_auto_push = 1
 normal! yy
-sleep 200m
+let s:start = reltime()
+while g:cinch_last_push.status ==# 'pending' && reltimefloat(reltime(s:start)) < 2.0
+  sleep 50m
+endwhile
 call writefile([json_encode(g:cinch_last_push)], g:cinch_test_state_path)
 EOF
   run_vim "$CINCH_TEST_DIR/scenario.vim"

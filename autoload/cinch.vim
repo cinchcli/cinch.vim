@@ -10,10 +10,7 @@ function! cinch#push(text, ...) abort
     call cinch#_echo_error('binary not found: ' . g:cinch_binary)
     return
   endif
-  " Strip a single trailing newline added by linewise yanks so byte counts
-  " and wire content are consistent between Vim and Neovim.
-  let l:text = substitute(a:text, "\n$", '', '')
-  let g:cinch_last_push = {'at': localtime(), 'bytes': strlen(l:text), 'status': 'pending', 'error': ''}
+  let g:cinch_last_push = {'at': localtime(), 'bytes': strlen(a:text), 'status': 'pending', 'error': ''}
   let l:argv = [g:cinch_binary, 'push']
   if has('nvim')
     let l:jid = jobstart(l:argv, {
@@ -21,11 +18,8 @@ function! cinch#push(text, ...) abort
           \ 'on_stderr': function('cinch#_on_stderr_nvim', ['push']),
           \ 'on_exit': function('cinch#_on_exit_nvim', ['push']),
           \ })
-    call chansend(l:jid, split(l:text, "\n", 1))
+    call chansend(l:jid, split(a:text, "\n", 1))
     call chanclose(l:jid, 'stdin')
-    if get(g:, 'cinch_sync_push', 0)
-      call jobwait([l:jid])
-    endif
   else
     let l:job = job_start(l:argv, {
           \ 'in_io': 'pipe',
@@ -33,7 +27,7 @@ function! cinch#push(text, ...) abort
           \ 'exit_cb': function('cinch#_on_exit_vim', ['push']),
           \ })
     let l:ch = job_getchannel(l:job)
-    call ch_sendraw(l:ch, l:text)
+    call ch_sendraw(l:ch, a:text)
     call ch_close_in(l:ch)
   endif
 endfunction
