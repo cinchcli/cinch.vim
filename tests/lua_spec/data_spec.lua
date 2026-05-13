@@ -1,0 +1,20 @@
+local data = require('cinch.data')
+
+describe('cinch.data', function()
+  it('parses cinch list --json output into a table of records', function()
+    local fixture = vim.fn.readfile(os.getenv('CINCH_FIXTURES_DIR') .. '/list.json')
+    local clips = data.parse_list(table.concat(fixture, '\n'))
+    assert.are.equal(2, #clips)
+    assert.are.equal('text', clips[1].content_type)
+    assert.are.equal('remote:iphone', clips[2].source)
+  end)
+
+  it('invokes the cinch CLI with the requested argv', function()
+    local result = data.run({ 'push' }, 'hello')
+    assert.are.equal(0, result.code)
+    local log_path = os.getenv('CINCH_TEST_DIR') .. '/calls.log'
+    local log = table.concat(vim.fn.readfile(log_path), '\n')
+    assert.is_true(log:find('push') ~= nil)
+    assert.is_true(log:find('hello') ~= nil)
+  end)
+end)
