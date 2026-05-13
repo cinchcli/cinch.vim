@@ -77,10 +77,14 @@ endwhile
 call writefile([getreg('"')], g:cinch_test_state_path)
 EOF
   run_vim "$CINCH_TEST_DIR/scenario.vim"
-  # verify push was called (grep returns non-zero on no match => test fails)
-  grep -E '^push' "$CINCH_TEST_DIR/calls.log"
-  # verify the unnamed register was restored to its original value
-  grep 'preexisting' "$CINCH_TEST_DIR/state.json"
+  run grep -E '^push\b' "$CINCH_TEST_DIR/calls.log"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *$'push\talpha'* ]]
+  run calls_count
+  [ "$output" -eq 1 ]
+  run cat "$CINCH_TEST_DIR/state.json"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"preexisting"* ]]
 }
 
 @test "case 6: ycc pushes the current line" {
@@ -96,4 +100,21 @@ EOF
   run_vim "$CINCH_TEST_DIR/scenario.vim"
   # verify push was called with the content of line one
   grep 'line one' "$CINCH_TEST_DIR/calls.log"
+}
+
+@test "case 7: yc{motion} with auto_push=1 fires exactly one push" {
+  cat > "$CINCH_TEST_DIR/scenario.vim" <<'EOF'
+call setline(1, ['alpha beta gamma'])
+let g:cinch_auto_push = 1
+normal! 0
+normal ycw
+let s:start = reltime()
+while g:cinch_last_push.status ==# 'pending' && reltimefloat(reltime(s:start)) < 2.0
+  sleep 50m
+endwhile
+EOF
+  run_vim "$CINCH_TEST_DIR/scenario.vim"
+  run calls_count
+  [ "$status" -eq 0 ]
+  [ "$output" -eq 1 ]
 }

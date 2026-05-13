@@ -14,6 +14,7 @@ let g:cinch_default_mappings = get(g:, 'cinch_default_mappings', 1)
 let g:cinch_verbose          = get(g:, 'cinch_verbose', 0)
 let g:cinch_last_push        = get(g:, 'cinch_last_push', {'at': 0, 'bytes': 0, 'status': '', 'error': ''})
 let g:cinch_last_pull        = get(g:, 'cinch_last_pull', {'at': 0, 'bytes': 0, 'source': '', 'status': '', 'error': ''})
+let g:cinch_in_opfunc        = get(g:, 'cinch_in_opfunc', 0)
 
 " Commands
 command! CinchPush call cinch#push(getreg(g:cinch_push_register))
@@ -42,6 +43,7 @@ augroup END
 
 function! s:on_yank() abort
   if !g:cinch_auto_push | return | endif
+  if get(g:, 'cinch_in_opfunc', 0) | return | endif
   let l:reg = has('nvim') ? v:event.regname : v:register
   if l:reg !=# '' && l:reg !=# g:cinch_push_register | return | endif
   let l:op = has('nvim') ? v:event.operator : 'y'

@@ -105,9 +105,13 @@ endfunction
 " Operator function: called by Vim after the user provides a motion to yc{motion}.
 " Yanks the motion region into @", calls cinch#push, then restores @" so the
 " operator does not clobber the user's unnamed register.
+" g:cinch_in_opfunc is set while the yank happens so that the TextYankPost
+" autocmd (s:on_yank) skips the push — preventing a double-push when
+" g:cinch_auto_push = 1.
 function! cinch#opfunc(type) abort
   let l:save_reg  = getreg('"')
   let l:save_type = getregtype('"')
+  let g:cinch_in_opfunc = 1
   try
     if a:type ==# 'char'
       silent normal! `[v`]y
@@ -118,18 +122,25 @@ function! cinch#opfunc(type) abort
     endif
     call cinch#push(getreg('"'))
   finally
+    let g:cinch_in_opfunc = 0
     call setreg('"', l:save_reg, l:save_type)
   endtry
 endfunction
 
 " Visual operator: re-selects the last visual region, yanks it, calls
 " cinch#push, then restores @".
+" g:cinch_in_opfunc guards against double-push (same reason as cinch#opfunc).
 function! cinch#opfunc_visual() abort
   let l:save_reg  = getreg('"')
   let l:save_type = getregtype('"')
-  silent normal! gvy
-  call cinch#push(getreg('"'))
-  call setreg('"', l:save_reg, l:save_type)
+  let g:cinch_in_opfunc = 1
+  try
+    silent normal! gvy
+    call cinch#push(getreg('"'))
+  finally
+    let g:cinch_in_opfunc = 0
+    call setreg('"', l:save_reg, l:save_type)
+  endtry
 endfunction
 
 " Returns 'g@' (the operator-pending prefix) after setting operatorfunc.
