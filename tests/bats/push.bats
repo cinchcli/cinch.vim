@@ -118,3 +118,21 @@ EOF
   [ "$status" -eq 0 ]
   [ "$output" -eq 1 ]
 }
+
+@test "ranged CinchPush sends selected lines on stdin" {
+  cat > "$CINCH_TEST_DIR/scenario.vim" <<'EOF'
+call setline(1, ['one', 'two', 'three'])
+let g:cinch_auto_push = 0
+silent 1,2CinchPush
+let s:start = reltime()
+while g:cinch_last_push.status ==# 'pending' && reltimefloat(reltime(s:start)) < 2.0
+  sleep 50m
+endwhile
+EOF
+  run_vim "$CINCH_TEST_DIR/scenario.vim"
+  run cat "$CINCH_TEST_DIR/calls.log"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"one"* ]]
+  [[ "$output" == *"two"* ]]
+  [[ "$output" != *"three"* ]]
+}

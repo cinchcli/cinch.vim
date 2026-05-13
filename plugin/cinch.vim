@@ -17,7 +17,15 @@ let g:cinch_last_pull        = get(g:, 'cinch_last_pull', {'at': 0, 'bytes': 0, 
 let g:cinch_in_opfunc        = get(g:, 'cinch_in_opfunc', 0)
 
 " Commands
-command! CinchPush call cinch#push(getreg(g:cinch_push_register))
+command! -range=% CinchPush call <SID>cinch_push_range(<range>, <line1>, <line2>)
+
+function! s:cinch_push_range(has_range, l1, l2) abort
+  if a:has_range && a:l1 != a:l2
+    call cinch#push(join(getline(a:l1, a:l2), "\n"))
+  else
+    call cinch#push(getreg(g:cinch_push_register))
+  endif
+endfunction
 command! CinchPull call cinch#pull()
 command! CinchToggle let g:cinch_auto_push = !g:cinch_auto_push
       \ | echom '[cinch] auto-push ' . (g:cinch_auto_push ? 'enabled' : 'disabled')
