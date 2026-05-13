@@ -38,9 +38,13 @@ function! cinch#pull(...) abort
   let l:argv = [g:cinch_binary, 'pull']
   if has_key(l:opts, 'from') && !empty(l:opts.from)
     call extend(l:argv, ['--from', l:opts.from])
-  elseif get(g:, 'cinch_default_source', '') !=# ''
-    call extend(l:argv, ['--from', g:cinch_default_source])
-    let l:opts.from = g:cinch_default_source
+  else
+    if get(g:, 'cinch_default_source', '') !=# ''
+      call extend(l:argv, ['--from', g:cinch_default_source])
+      let l:opts.from = g:cinch_default_source
+    elseif get(g:, 'cinch_pull_exclude_self', 0)
+      call add(l:argv, '--exclude-self')
+    endif
   endif
   let l:output = system(join(map(copy(l:argv), 'shellescape(v:val)'), ' '))
   let l:exit = v:shell_error
