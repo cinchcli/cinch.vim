@@ -15,3 +15,14 @@ pre-commit:
         else
           echo "vint not installed — skipping (pip install vim-vint)"
         fi
+
+pre-push:
+  parallel: true
+  commands:
+    bats:
+      run: |
+        if command -v bats >/dev/null 2>&1; then
+          bats tests/bats
+        else
+          echo "bats not installed — skipping (brew install bats-core)"
+        fi

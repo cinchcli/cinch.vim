@@ -8,19 +8,23 @@ CONTENTS                                                        *cinch-contents*
   3. Installation ......................................... |cinch-install|
   4. Configuration ........................................ |cinch-config|
   5. Commands ............................................. |cinch-commands|
+  6. Mappings ............................................. |cinch-mappings|
+  7. Picker ............................................... |cinch-picker|
+  8. Lua API .............................................. |cinch-lua|
 
 ==============================================================================
 1. INTRODUCTION                                                    *cinch-intro*
 
-cinch.vim integrates the Cinch remote clipboard CLI into Vim and Neovim.
-Yanked text is automatically pushed to your Cinch relay, and you can pull
-the latest clip back into a register with a single command.
+cinch.vim is the Vim/Neovim front-end for the Cinch remote clipboard CLI.
+Push from yank (yc operator family), pull into Vim over SSH, and browse
+history through whichever picker you already use (snacks.nvim / fzf-lua /
+telescope) or a builtin fallback.
 
 ==============================================================================
 2. REQUIREMENTS                                             *cinch-requirements*
 
-  - Vim 8.0+ or Neovim 0.5+
-  - cinch CLI installed and authenticated (`cinch auth status`)
+  - Vim 8.0+ (Vim 8.2+ for popup picker) or Neovim 0.7+
+  - cinch CLI 0.5+ (`cinch list`, `cinch pull --id`, `cinch pull --exclude-self`)
 
 ==============================================================================
 3. INSTALLATION                                                  *cinch-install*
@@ -29,7 +33,6 @@ lazy.nvim ~
 >lua
   { "cinchcli/cinch.vim" }
 <
-
 vim-plug ~
 >vim
   Plug 'cinchcli/cinch.vim'
@@ -38,35 +41,77 @@ vim-plug ~
 ==============================================================================
 4. CONFIGURATION                                                  *cinch-config*
 
-*g:cinch_auto_push* (default: 1)
-  Set to 0 to disable automatic push on yank.
->vim
-  let g:cinch_auto_push = 0
-<
-
-*g:cinch_push_register* (default: '"')
-  Which register triggers auto-push. Default is the unnamed register.
->vim
-  let g:cinch_push_register = '+'
-<
-
-*g:cinch_binary* (default: 'cinch')
-  Path to the cinch binary if not in PATH.
->vim
-  let g:cinch_binary = '/usr/local/bin/cinch'
-<
+g:cinch_auto_push           1     Push automatically on yank
+g:cinch_push_register       '"'   Register that triggers auto-push
+g:cinch_binary              cinch Path to the CLI
+g:cinch_default_source      ''    If set, plain :CinchPull pulls --from <src>
+g:cinch_pull_exclude_self   0     If 1, plain :CinchPull adds --exclude-self
+g:cinch_default_mappings    1     If 0, suppress yc-family default keymaps
+g:cinch_picker              auto  auto|snacks|fzf-lua|telescope|builtin
+g:cinch_verbose             0     0 silent, 1 echo, 2 debug
 
 ==============================================================================
 5. COMMANDS                                                     *cinch-commands*
 
 :CinchPush                                                        *:CinchPush*
-  Manually push the current unnamed register to the relay.
+  Push current register (or visual range with :'<,'>CinchPush).
 
 :CinchPull                                                        *:CinchPull*
-  Pull the latest clip from the relay into the unnamed register.
+  Pull latest clip into the configured register.
+
+:CinchPullFrom {device}                                       *:CinchPullFrom*
+  Pull latest clip from a specific device. Tab-completes from
+  `cinch devices --names`.
+
+:CinchHistory[!]                                                *:CinchHistory*
+  Open the history picker. ! requests an extended result set (200).
 
 :CinchToggle                                                    *:CinchToggle*
-  Toggle auto-push on yank on/off.
+  Toggle auto-push on yank.
+
+:CinchStatus                                                    *:CinchStatus*
+  Show auth, default source, last push/pull, and auto-push state.
+
+==============================================================================
+6. MAPPINGS                                                     *cinch-mappings*
+
+Default (gated by g:cinch_default_mappings):
+  yc{motion}   Push the motion's text.
+  ycc          Push current line.
+  yC           Push to end of line.
+  yc (visual)  Push the visual selection.
+
+<Plug> mappings (always present):
+  <Plug>(cinch-push)
+  <Plug>(cinch-push-line)
+  <Plug>(cinch-push-eol)
+  <Plug>(cinch-pull)
+  <Plug>(cinch-pull-after)
+  <Plug>(cinch-pull-before)
+  <Plug>(cinch-history)
+
+==============================================================================
+7. PICKER                                                        *cinch-picker*
+
+Auto-detection order: snacks > fzf-lua > telescope > builtin. Override with
+let g:cinch_picker = 'fzf-lua'. The builtin picker is a small Neovim float
+or, in classic Vim, a popup (Vim 8.2+) or scratch buffer (8.0–8.1).
+
+Picker keys (builtin / popup):
+  <CR>  paste after cursor
+  q/<Esc>  close
+
+==============================================================================
+8. LUA API                                                          *cinch-lua*
+
+>lua
+  local cinch = require('cinch')
+  cinch.push({ text = 'hi' })
+  cinch.pull({ from = 'desktop' })
+  cinch.pick({ limit = 50 })
+  cinch.toggle()
+  cinch.status()
+<
 
 ==============================================================================
 vim:tw=78:ts=8:ft=help:norl:

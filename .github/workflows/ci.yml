@@ -11,30 +11,46 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+        with: { python-version: "3.12" }
+      - run: pip install vim-vint
+      - run: vint plugin/ autoload/
 
-      - name: Install vint
-        run: pip install vim-vint
-
-      - name: Run vint
-        run: vint plugin/
-
-  smoke:
-    runs-on: ubuntu-latest
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        editor: [vim, nvim]
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install Vim
-        run: sudo apt-get update && sudo apt-get install -y vim
-
-      - name: Source plugin (verify it loads without error)
+      - name: Install bats
         run: |
-          vim -E -s -u NONE -N \
-              -c 'set runtimepath+=.' \
-              -c 'runtime plugin/cinch.vim' \
-              -c 'echo "loaded ok"' \
-              -c 'qa!' \
-              < /dev/null
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            brew install bats-core
+          else
+            sudo apt-get update && sudo apt-get install -y bats
+          fi
+      - name: Install editor
+        run: |
+          if [ "${{ matrix.editor }}" = "nvim" ]; then
+            if [ "$RUNNER_OS" = "macOS" ]; then
+              brew install neovim
+            else
+              sudo apt-get install -y neovim
+            fi
+          else
+            if [ "$RUNNER_OS" = "macOS" ]; then
+              brew install vim
+            else
+              sudo apt-get install -y vim
+            fi
+          fi
+      - name: Run bats
+        env:
+          VIM_BIN: ${{ matrix.editor }}
+        run: bats tests/bats
+      - name: Plenary spec
+        if: matrix.editor == 'nvim'
+        run: scripts/lua-test.sh
