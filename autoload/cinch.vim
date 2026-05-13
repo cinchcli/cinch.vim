@@ -101,3 +101,42 @@ function! cinch#_finish(kind, code) abort
   endif
   call cinch#_set_last(a:kind, l:target)
 endfunction
+
+" Operator function: called by Vim after the user provides a motion to yc{motion}.
+" Yanks the motion region into @", calls cinch#push, then restores @" so the
+" operator does not clobber the user's unnamed register.
+function! cinch#opfunc(type) abort
+  let l:save_reg  = getreg('"')
+  let l:save_type = getregtype('"')
+  try
+    if a:type ==# 'char'
+      silent normal! `[v`]y
+    elseif a:type ==# 'line'
+      silent normal! '[V']y
+    elseif a:type ==# 'block'
+      silent execute "normal! `[\<C-v>`]y"
+    endif
+    call cinch#push(getreg('"'))
+  finally
+    call setreg('"', l:save_reg, l:save_type)
+  endtry
+endfunction
+
+" Visual operator: re-selects the last visual region, yanks it, calls
+" cinch#push, then restores @".
+function! cinch#opfunc_visual() abort
+  let l:save_reg  = getreg('"')
+  let l:save_type = getregtype('"')
+  silent normal! gvy
+  call cinch#push(getreg('"'))
+  call setreg('"', l:save_reg, l:save_type)
+endfunction
+
+" Returns 'g@' (the operator-pending prefix) after setting operatorfunc.
+" Used as <expr> in the <Plug>(cinch-push) normal-mode mapping so that
+" yc{motion} works: Vim evaluates the expression, gets 'g@', then waits
+" for the user's motion and calls cinch#opfunc with the motion type.
+function! cinch#_set_opfunc() abort
+  set operatorfunc=cinch#opfunc
+  return 'g@'
+endfunction

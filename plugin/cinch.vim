@@ -21,6 +21,19 @@ command! CinchPull call cinch#pull()
 command! CinchToggle let g:cinch_auto_push = !g:cinch_auto_push
       \ | echom '[cinch] auto-push ' . (g:cinch_auto_push ? 'enabled' : 'disabled')
 
+" <Plug> mappings (always installed; default maps gated by g:cinch_default_mappings)
+nnoremap <silent> <expr> <Plug>(cinch-push)      cinch#_set_opfunc()
+nnoremap <silent>        <Plug>(cinch-push-line)  :call cinch#push(getline('.'))<CR>
+nnoremap <silent>        <Plug>(cinch-push-eol)   :call cinch#push(strpart(getline('.'), col('.') - 1))<CR>
+xnoremap <silent>        <Plug>(cinch-push)       :<C-u>call cinch#opfunc_visual()<CR>
+
+if g:cinch_default_mappings
+  silent! nmap <unique> yc  <Plug>(cinch-push)
+  silent! nmap <unique> ycc <Plug>(cinch-push-line)
+  silent! nmap <unique> yC  <Plug>(cinch-push-eol)
+  silent! xmap <unique> yc  <Plug>(cinch-push)
+endif
+
 " Autocmd
 augroup cinch
   autocmd!
