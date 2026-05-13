@@ -45,6 +45,7 @@ sleep 200m
 EOF
   run_vim "$CINCH_TEST_DIR/scenario.vim"
   run calls_count
+  [ "$status" -eq 0 ]
   [ "$output" -eq 0 ]
 }
 
@@ -58,5 +59,6 @@ sleep 200m
 EOF
   run_vim "$CINCH_TEST_DIR/scenario.vim"
   run calls_count
+  [ "$status" -eq 0 ]
   [ "$output" -eq 0 ]
 }

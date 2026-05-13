@@ -12,6 +12,8 @@ let g:cinch_default_source   = get(g:, 'cinch_default_source', '')
 let g:cinch_pull_exclude_self = get(g:, 'cinch_pull_exclude_self', 0)
 let g:cinch_default_mappings = get(g:, 'cinch_default_mappings', 1)
 let g:cinch_verbose          = get(g:, 'cinch_verbose', 0)
+let g:cinch_last_push        = get(g:, 'cinch_last_push', {'at': 0, 'bytes': 0, 'status': '', 'error': ''})
+let g:cinch_last_pull        = get(g:, 'cinch_last_pull', {'at': 0, 'bytes': 0, 'source': '', 'status': '', 'error': ''})
 
 " Commands
 command! CinchPush call cinch#push(getreg(g:cinch_push_register))

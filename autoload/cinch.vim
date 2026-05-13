@@ -1,10 +1,6 @@
 " autoload/cinch.vim — core push/pull/status.
 
-let g:cinch_last_push = get(g:, 'cinch_last_push', {'at': 0, 'bytes': 0, 'status': '', 'error': ''})
-let g:cinch_last_pull = get(g:, 'cinch_last_pull', {'at': 0, 'bytes': 0, 'source': '', 'status': '', 'error': ''})
-
 function! cinch#push(text, ...) abort
-  let l:opts = a:0 ? a:1 : {}
   if !executable(g:cinch_binary)
     call cinch#_set_last('push', {'status': 'error', 'error': 'binary not found: ' . g:cinch_binary})
     call cinch#_echo_error('binary not found: ' . g:cinch_binary)
@@ -63,13 +59,7 @@ function! cinch#pull(...) abort
 endfunction
 
 function! cinch#_set_last(kind, fields) abort
-  let l:target = a:kind ==# 'push' ? g:cinch_last_push : g:cinch_last_pull
-  call extend(l:target, a:fields)
-  if a:kind ==# 'push'
-    let g:cinch_last_push = l:target
-  else
-    let g:cinch_last_pull = l:target
-  endif
+  call extend(a:kind ==# 'push' ? g:cinch_last_push : g:cinch_last_pull, a:fields)
 endfunction
 
 function! cinch#_echo_error(msg) abort
@@ -77,8 +67,8 @@ function! cinch#_echo_error(msg) abort
 endfunction
 
 function! cinch#_exit_message(code, stderr) abort
-  if a:code ==# 2 | return 'not authenticated. Run: cinch auth login' | endif
-  if a:code ==# 4 | return 'relay unreachable. Check network or relay URL' | endif
+  if a:code == 2 | return 'not authenticated. Run: cinch auth login' | endif
+  if a:code == 4 | return 'relay unreachable. Check network or relay URL' | endif
   let l:first = split(a:stderr, "\n")
   return empty(l:first) ? ('cli exit ' . a:code) : l:first[0]
 endfunction
@@ -104,7 +94,7 @@ endfunction
 
 function! cinch#_finish(kind, code) abort
   let l:target = a:kind ==# 'push' ? g:cinch_last_push : g:cinch_last_pull
-  let l:target.status = a:code ==# 0 ? 'ok' : 'error'
+  let l:target.status = a:code == 0 ? 'ok' : 'error'
   if a:code != 0
     let l:target.error = cinch#_exit_message(a:code, get(l:target, 'error', ''))
     call cinch#_echo_error(l:target.error)
