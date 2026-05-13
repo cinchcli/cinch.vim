@@ -186,3 +186,24 @@ function! cinch#complete_devices(arg, line, pos) abort
   endif
   return filter(copy(s:device_cache), 'v:val =~? "^" . a:arg')
 endfunction
+
+function! cinch#status() abort
+  let l:auth = ''
+  if executable(g:cinch_binary)
+    let l:auth = substitute(system(g:cinch_binary . ' auth status'), '\n', ' ', 'g')
+  endif
+  echo "cinch.vim"
+  echo "─────────"
+  echo "auth:        " . (empty(l:auth) ? '(unknown)' : l:auth)
+  echo "default src: " . (empty(g:cinch_default_source) ? '(none)' : g:cinch_default_source)
+  echo "last push:   " . cinch#_format_last(g:cinch_last_push, 0)
+  echo "last pull:   " . cinch#_format_last(g:cinch_last_pull, 1)
+  echo "auto-push:   " . (g:cinch_auto_push ? 'on' : 'off')
+endfunction
+
+function! cinch#_format_last(state, with_source) abort
+  if empty(get(a:state, 'status', '')) | return '(none)' | endif
+  let l:ago = a:state.at > 0 ? (localtime() - a:state.at) . 's ago · ' : ''
+  let l:src = a:with_source && !empty(get(a:state, 'source', '')) ? a:state.source . ' · ' : ''
+  return l:ago . l:src . a:state.bytes . ' bytes · ' . a:state.status
+endfunction

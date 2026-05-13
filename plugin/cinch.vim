@@ -31,6 +31,7 @@ command! -nargs=1 -complete=customlist,cinch#complete_devices
       \ CinchPullFrom call cinch#pull({'from': <q-args>})
 command! CinchToggle let g:cinch_auto_push = !g:cinch_auto_push
       \ | echom '[cinch] auto-push ' . (g:cinch_auto_push ? 'enabled' : 'disabled')
+command! CinchStatus call cinch#status()
 
 " <Plug> mappings (always installed; default maps gated by g:cinch_default_mappings)
 nnoremap <silent> <expr> <Plug>(cinch-push)      cinch#_set_opfunc()
