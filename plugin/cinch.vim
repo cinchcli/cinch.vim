@@ -32,6 +32,7 @@ command! -nargs=1 -complete=customlist,cinch#complete_devices
 command! CinchToggle let g:cinch_auto_push = !g:cinch_auto_push
       \ | echom '[cinch] auto-push ' . (g:cinch_auto_push ? 'enabled' : 'disabled')
 command! CinchStatus call cinch#status()
+command! -bang CinchHistory call cinch#history(<bang>0)
 
 highlight default link CinchStatusError   ErrorMsg
 highlight default link CinchStatusPending Statement
@@ -46,6 +47,10 @@ xnoremap <silent>        <Plug>(cinch-push)       :<C-u>call cinch#opfunc_visual
 nnoremap <silent> <Plug>(cinch-pull)        :call cinch#pull()<CR>
 nnoremap <silent> <Plug>(cinch-pull-after)  :call cinch#pull_paste('after')<CR>
 nnoremap <silent> <Plug>(cinch-pull-before) :call cinch#pull_paste('before')<CR>
+
+if has('nvim')
+  nnoremap <silent> <Plug>(cinch-history) :CinchHistory<CR>
+endif
 
 if g:cinch_default_mappings
   silent! nmap <unique> yc  <Plug>(cinch-push)

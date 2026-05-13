@@ -208,6 +208,15 @@ function! cinch#_format_last(state, with_source) abort
   return l:ago . l:src . a:state.bytes . ' bytes · ' . a:state.status
 endfunction
 
+function! cinch#history(bang) abort
+  let l:limit = a:bang ? 200 : 50
+  if has('nvim')
+    call luaeval("require('cinch').pick(_A)", {'limit': l:limit})
+  else
+    call cinch#picker#open(l:limit)
+  endif
+endfunction
+
 function! cinch#statusline() abort
   if !g:cinch_auto_push | return '[cinch off]' | endif
   let l:p = get(g:, 'cinch_last_push', {})
