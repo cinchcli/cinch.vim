@@ -51,7 +51,7 @@ endfunction
 " <CR> accepts the current line; q / <Esc> dismiss.
 function! s:popup_filter(id, key) abort
   if a:key ==# "\<CR>"
-    let l:idx = popup_getoptions(a:id).cursorline
+    let l:idx = line('.', a:id)
     call popup_close(a:id, l:idx)
     return 1
   elseif a:key ==# 'q' || a:key ==# "\<Esc>"
