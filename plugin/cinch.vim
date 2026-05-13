@@ -27,6 +27,8 @@ function! s:cinch_push_range(has_range, l1, l2) abort
   endif
 endfunction
 command! CinchPull call cinch#pull()
+command! -nargs=1 -complete=customlist,cinch#complete_devices
+      \ CinchPullFrom call cinch#pull({'from': <q-args>})
 command! CinchToggle let g:cinch_auto_push = !g:cinch_auto_push
       \ | echom '[cinch] auto-push ' . (g:cinch_auto_push ? 'enabled' : 'disabled')
 

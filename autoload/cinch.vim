@@ -151,3 +151,17 @@ function! cinch#_set_opfunc() abort
   set operatorfunc=cinch#opfunc
   return 'g@'
 endfunction
+
+let s:device_cache = []
+let s:device_cache_at = 0
+
+function! cinch#complete_devices(arg, line, pos) abort
+  if localtime() - s:device_cache_at > 30
+    let l:out = system(g:cinch_binary . ' devices --names')
+    if v:shell_error == 0
+      let s:device_cache = filter(split(l:out, "\n"), 'v:val !=# ""')
+      let s:device_cache_at = localtime()
+    endif
+  endif
+  return filter(copy(s:device_cache), 'v:val =~? "^" . a:arg')
+endfunction
