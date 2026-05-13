@@ -33,7 +33,7 @@ EOF
   run cat "$CINCH_TEST_DIR/state.json"
   [ "$status" -eq 0 ]
   [[ "$output" == *'"status":"ok"'* ]]
-  [[ "$output" == *'"bytes":7'* ]]
+  [[ "$output" =~ \"bytes\":\ ?7 ]]
 }
 
 @test "case 3: auto-push off + yy fires zero invocations" {
@@ -116,6 +116,25 @@ EOF
   run_vim "$CINCH_TEST_DIR/scenario.vim"
   run calls_count
   [ "$status" -eq 0 ]
+  [ "$output" -eq 1 ]
+}
+
+@test "case 1: :CinchPush sends register content on stdin" {
+  cat > "$CINCH_TEST_DIR/scenario.vim" <<'EOF'
+let g:cinch_auto_push = 0
+let @" = 'register-payload'
+silent CinchPush
+let s:start = reltime()
+while g:cinch_last_push.status ==# 'pending' && reltimefloat(reltime(s:start)) < 2.0
+  sleep 50m
+endwhile
+EOF
+  run_vim "$CINCH_TEST_DIR/scenario.vim"
+  run cat "$CINCH_TEST_DIR/calls.log"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"push"* ]]
+  [[ "$output" == *"register-payload"* ]]
+  run calls_count
   [ "$output" -eq 1 ]
 }
 

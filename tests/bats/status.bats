@@ -46,6 +46,7 @@ EOF
   run cat "$CINCH_TEST_DIR/state.json"
   [ "$status" -eq 0 ]
   [[ "$output" == *"auth"* ]]
+  [[ "$output" == *"relay"* ]]
   [[ "$output" == *"last push"* ]]
   [[ "$output" == *"last pull"* ]]
 }

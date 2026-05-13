@@ -188,13 +188,16 @@ function! cinch#complete_devices(arg, line, pos) abort
 endfunction
 
 function! cinch#status() abort
-  let l:auth = ''
+  let l:raw = ''
   if executable(g:cinch_binary)
-    let l:auth = substitute(system(g:cinch_binary . ' auth status'), '\n', ' ', 'g')
+    let l:raw = system(g:cinch_binary . ' auth status')
   endif
+  let l:auth = substitute(l:raw, '\n', ' ', 'g')
+  let l:relay = matchstr(l:raw, 'relay:\s*\zs\S\+')
   echo "cinch.vim"
   echo "─────────"
   echo "auth:        " . (empty(l:auth) ? '(unknown)' : l:auth)
+  echo "relay:       " . (empty(l:relay) ? '(unknown)' : l:relay)
   echo "default src: " . (empty(g:cinch_default_source) ? '(none)' : g:cinch_default_source)
   echo "last push:   " . cinch#_format_last(g:cinch_last_push, 0)
   echo "last pull:   " . cinch#_format_last(g:cinch_last_pull, 1)

@@ -48,9 +48,7 @@ nnoremap <silent> <Plug>(cinch-pull)        :call cinch#pull()<CR>
 nnoremap <silent> <Plug>(cinch-pull-after)  :call cinch#pull_paste('after')<CR>
 nnoremap <silent> <Plug>(cinch-pull-before) :call cinch#pull_paste('before')<CR>
 
-if has('nvim')
-  nnoremap <silent> <Plug>(cinch-history) :CinchHistory<CR>
-endif
+nnoremap <silent> <Plug>(cinch-history) :CinchHistory<CR>
 
 if g:cinch_default_mappings
   silent! nmap <unique> yc  <Plug>(cinch-push)

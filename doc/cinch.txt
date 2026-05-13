@@ -88,7 +88,7 @@ Default (gated by g:cinch_default_mappings):
   <Plug>(cinch-pull)
   <Plug>(cinch-pull-after)
   <Plug>(cinch-pull-before)
-  <Plug>(cinch-history)
+  <Plug>(cinch-history)           (dispatches to Neovim picker or Vim 8 builtin)
 
 ==============================================================================
 7. PICKER                                                        *cinch-picker*
