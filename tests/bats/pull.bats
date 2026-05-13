@@ -63,3 +63,31 @@ EOF
   [ "$status" -eq 0 ]
   [[ "$output" != *"--exclude-self"* ]]
 }
+
+@test "<Plug>(cinch-pull) invokes cinch pull and writes to register" {
+  cat > "$CINCH_TEST_DIR/scenario.vim" <<'EOF'
+let g:cinch_auto_push = 0
+nmap gp <Plug>(cinch-pull)
+normal gp
+call writefile([getreg('"')], g:cinch_test_state_path)
+EOF
+  run_vim "$CINCH_TEST_DIR/scenario.vim"
+  run cat "$CINCH_TEST_DIR/state.json"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"hello from the fake relay"* ]]
+}
+
+@test "<Plug>(cinch-pull-after) pastes after cursor" {
+  cat > "$CINCH_TEST_DIR/scenario.vim" <<'EOF'
+call setline(1, ['head'])
+let g:cinch_auto_push = 0
+nmap gp <Plug>(cinch-pull-after)
+normal gp
+call writefile(getline(1, '$'), g:cinch_test_state_path)
+EOF
+  run_vim "$CINCH_TEST_DIR/scenario.vim"
+  run cat "$CINCH_TEST_DIR/state.json"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"head"* ]]
+  [[ "$output" == *"hello from the fake relay"* ]]
+}

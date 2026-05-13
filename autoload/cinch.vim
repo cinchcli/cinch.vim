@@ -156,6 +156,23 @@ function! cinch#_set_opfunc() abort
   return 'g@'
 endfunction
 
+function! cinch#pull_paste(where) abort
+  let l:text = cinch#pull()
+  if empty(l:text) | return | endif
+  let l:save = getreg('"')
+  let l:save_t = getregtype('"')
+  try
+    call setreg('"', l:text, 'v')
+    if a:where ==# 'before'
+      silent normal! P
+    else
+      silent normal! p
+    endif
+  finally
+    call setreg('"', l:save, l:save_t)
+  endtry
+endfunction
+
 let s:device_cache = []
 let s:device_cache_at = 0
 

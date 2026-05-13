@@ -38,6 +38,10 @@ nnoremap <silent>        <Plug>(cinch-push-line)  :call cinch#push(getline('.'))
 nnoremap <silent>        <Plug>(cinch-push-eol)   :call cinch#push(strpart(getline('.'), col('.') - 1))<CR>
 xnoremap <silent>        <Plug>(cinch-push)       :<C-u>call cinch#opfunc_visual()<CR>
 
+nnoremap <silent> <Plug>(cinch-pull)        :call cinch#pull()<CR>
+nnoremap <silent> <Plug>(cinch-pull-after)  :call cinch#pull_paste('after')<CR>
+nnoremap <silent> <Plug>(cinch-pull-before) :call cinch#pull_paste('before')<CR>
+
 if g:cinch_default_mappings
   silent! nmap <unique> yc  <Plug>(cinch-push)
   silent! nmap <unique> ycc <Plug>(cinch-push-line)
