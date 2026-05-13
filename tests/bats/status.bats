@@ -68,3 +68,16 @@ EOF
   [[ "$output" == *"✗"* ]]
   [[ "$output" == *"off"* ]]
 }
+
+@test "cinch#picker#open scratch path lists rows with sources" {
+  cat > "$CINCH_TEST_DIR/scenario.vim" <<'EOF'
+let g:cinch_auto_push = 0
+call cinch#picker#open(50, 1)
+call writefile(getline(1, '$'), g:cinch_test_state_path)
+EOF
+  run_vim "$CINCH_TEST_DIR/scenario.vim"
+  run cat "$CINCH_TEST_DIR/state.json"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"[remote:desktop]"* ]]
+  [[ "$output" == *"[remote:iphone]"* ]]
+}
