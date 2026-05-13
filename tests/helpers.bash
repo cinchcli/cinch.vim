@@ -16,10 +16,19 @@ run_vim() {
   local script="$1"
   shift
   local out_state="$CINCH_TEST_DIR/state.json"
-  "${VIM_BIN:-vim}" -Es -u "$BATS_TEST_DIRNAME/../minimal.vim" \
-    -c "let g:cinch_test_state_path = '$out_state'" \
-    -c "source $script" \
-    -c "qa!" "$@" < /dev/null
+  local bin="${VIM_BIN:-vim}"
+  # nvim requires --headless (not -Es) so that jobstart's event loop runs.
+  if "$bin" --version 2>/dev/null | grep -q NVIM; then
+    "$bin" --headless -u "$BATS_TEST_DIRNAME/../minimal.vim" \
+      -c "let g:cinch_test_state_path = '$out_state'" \
+      -c "source $script" \
+      -c "qa!" "$@" < /dev/null
+  else
+    "$bin" -Es -u "$BATS_TEST_DIRNAME/../minimal.vim" \
+      -c "let g:cinch_test_state_path = '$out_state'" \
+      -c "source $script" \
+      -c "qa!" "$@" < /dev/null
+  fi
 }
 
 read_calls() {

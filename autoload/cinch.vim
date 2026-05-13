@@ -1,0 +1,119 @@
+" autoload/cinch.vim — core push/pull/status.
+
+let g:cinch_last_push = get(g:, 'cinch_last_push', {'at': 0, 'bytes': 0, 'status': '', 'error': ''})
+let g:cinch_last_pull = get(g:, 'cinch_last_pull', {'at': 0, 'bytes': 0, 'source': '', 'status': '', 'error': ''})
+
+function! cinch#push(text, ...) abort
+  let l:opts = a:0 ? a:1 : {}
+  if !executable(g:cinch_binary)
+    call cinch#_set_last('push', {'status': 'error', 'error': 'binary not found: ' . g:cinch_binary})
+    call cinch#_echo_error('binary not found: ' . g:cinch_binary)
+    return
+  endif
+  " Strip a single trailing newline added by linewise yanks so byte counts
+  " and wire content are consistent between Vim and Neovim.
+  let l:text = substitute(a:text, "\n$", '', '')
+  let g:cinch_last_push = {'at': localtime(), 'bytes': strlen(l:text), 'status': 'pending', 'error': ''}
+  let l:argv = [g:cinch_binary, 'push']
+  if has('nvim')
+    let l:jid = jobstart(l:argv, {
+          \ 'stdin': 'pipe',
+          \ 'on_stderr': function('cinch#_on_stderr_nvim', ['push']),
+          \ 'on_exit': function('cinch#_on_exit_nvim', ['push']),
+          \ })
+    call chansend(l:jid, split(l:text, "\n", 1))
+    call chanclose(l:jid, 'stdin')
+    if get(g:, 'cinch_sync_push', 0)
+      call jobwait([l:jid])
+    endif
+  else
+    let l:job = job_start(l:argv, {
+          \ 'in_io': 'pipe',
+          \ 'err_cb': function('cinch#_on_stderr_vim', ['push']),
+          \ 'exit_cb': function('cinch#_on_exit_vim', ['push']),
+          \ })
+    let l:ch = job_getchannel(l:job)
+    call ch_sendraw(l:ch, l:text)
+    call ch_close_in(l:ch)
+  endif
+endfunction
+
+function! cinch#pull(...) abort
+  let l:opts = a:0 ? a:1 : {}
+  if !executable(g:cinch_binary)
+    call cinch#_set_last('pull', {'status': 'error', 'error': 'binary not found: ' . g:cinch_binary})
+    call cinch#_echo_error('binary not found: ' . g:cinch_binary)
+    return ''
+  endif
+  let l:argv = [g:cinch_binary, 'pull']
+  if has_key(l:opts, 'from') && !empty(l:opts.from)
+    call extend(l:argv, ['--from', l:opts.from])
+  elseif get(g:, 'cinch_default_source', '') !=# ''
+    call extend(l:argv, ['--from', g:cinch_default_source])
+    let l:opts.from = g:cinch_default_source
+  endif
+  let l:output = system(join(map(copy(l:argv), 'shellescape(v:val)'), ' '))
+  let l:exit = v:shell_error
+  if l:exit != 0
+    let g:cinch_last_pull = {'at': localtime(), 'bytes': 0, 'source': get(l:opts, 'from', ''), 'status': 'error', 'error': cinch#_exit_message(l:exit, l:output)}
+    call cinch#_echo_error(g:cinch_last_pull.error)
+    return ''
+  endif
+  let l:register = get(l:opts, 'register', g:cinch_push_register)
+  call setreg(l:register, l:output)
+  let g:cinch_last_pull = {'at': localtime(), 'bytes': strlen(l:output), 'source': get(l:opts, 'from', ''), 'status': 'ok', 'error': ''}
+  if get(g:, 'cinch_verbose', 0) >= 1
+    echom '[cinch] pulled ' . strlen(l:output) . ' bytes to @' . l:register
+  endif
+  return l:output
+endfunction
+
+function! cinch#_set_last(kind, fields) abort
+  let l:target = a:kind ==# 'push' ? g:cinch_last_push : g:cinch_last_pull
+  call extend(l:target, a:fields)
+  if a:kind ==# 'push'
+    let g:cinch_last_push = l:target
+  else
+    let g:cinch_last_pull = l:target
+  endif
+endfunction
+
+function! cinch#_echo_error(msg) abort
+  echohl ErrorMsg | echom '[cinch] ' . a:msg | echohl None
+endfunction
+
+function! cinch#_exit_message(code, stderr) abort
+  if a:code ==# 2 | return 'not authenticated. Run: cinch auth login' | endif
+  if a:code ==# 4 | return 'relay unreachable. Check network or relay URL' | endif
+  let l:first = split(a:stderr, "\n")
+  return empty(l:first) ? ('cli exit ' . a:code) : l:first[0]
+endfunction
+
+function! cinch#_on_stderr_nvim(kind, job, data, event) abort
+  let l:lines = filter(copy(a:data), 'v:val !=# ""')
+  if !empty(l:lines)
+    call cinch#_set_last(a:kind, {'error': join(l:lines, ' ')})
+  endif
+endfunction
+
+function! cinch#_on_stderr_vim(kind, channel, msg) abort
+  call cinch#_set_last(a:kind, {'error': a:msg})
+endfunction
+
+function! cinch#_on_exit_nvim(kind, job, code, event) abort
+  call cinch#_finish(a:kind, a:code)
+endfunction
+
+function! cinch#_on_exit_vim(kind, job, code) abort
+  call cinch#_finish(a:kind, a:code)
+endfunction
+
+function! cinch#_finish(kind, code) abort
+  let l:target = a:kind ==# 'push' ? g:cinch_last_push : g:cinch_last_pull
+  let l:target.status = a:code ==# 0 ? 'ok' : 'error'
+  if a:code != 0
+    let l:target.error = cinch#_exit_message(a:code, get(l:target, 'error', ''))
+    call cinch#_echo_error(l:target.error)
+  endif
+  call cinch#_set_last(a:kind, l:target)
+endfunction
