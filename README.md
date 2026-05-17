@@ -1,15 +1,40 @@
 # cinch.vim
 
-Vim/Neovim plugin for [Cinch](https://cinch.jinmu.me) — remote clipboard for developers.
+Vim/Neovim plugin for [Cinch](https://cinchcli.com) — Your clipboard. Across every machine.
 
-Yank in Vim → available on any machine running Cinch.
+Yank in Vim → available on every machine running Cinch.
 
 ## Requirements
 
 - Vim 8.0+ or Neovim 0.5+
-- [cinch CLI](https://cinch.jinmu.me/docs/quick-start) installed and authenticated
+- `cinch` CLI installed and authenticated (see below)
 
-## Installation
+## Install the `cinch` CLI
+
+```sh
+brew install cinchcli/tap/cinch    # macOS (Apple Silicon) / Linux (ARM)
+cargo install cinch-cli            # any platform with a Rust toolchain
+```
+
+Other platforms: prebuilt binaries on the [releases page](https://github.com/cinchcli/cinch/releases). After install, run `cinch auth login` once. Full guide: [cinchcli.com/docs/quick-start](https://cinchcli.com/docs/quick-start/).
+
+## Install the plugin
+
+**Vim 8 / Neovim native packages**
+
+Vim:
+```sh
+git clone https://github.com/cinchcli/cinch.vim \
+  ~/.vim/pack/cinch/start/cinch.vim
+vim -u NONE -c "helptags ~/.vim/pack/cinch/start/cinch.vim/doc" -c q
+```
+
+Neovim:
+```sh
+git clone https://github.com/cinchcli/cinch.vim \
+  ~/.local/share/nvim/site/pack/cinch/start/cinch.vim
+nvim -u NONE -c "helptags ~/.local/share/nvim/site/pack/cinch/start/cinch.vim/doc" -c q
+```
 
 **lazy.nvim**
 ```lua
