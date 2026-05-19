@@ -1,4 +1,5 @@
 local data = require('cinch.data')
+local paste = require('cinch.paste')
 
 local M = {}
 
@@ -36,8 +37,7 @@ function M.open(opts)
         actions.close(prompt_bufnr)
         local entry = action_state.get_selected_entry()
         if entry and entry.value then
-          vim.fn.setreg(vim.g.cinch_push_register or '"', entry.value.content or '')
-          vim.cmd('normal! p')
+          paste.clip(entry.value)
         end
       end)
       return true

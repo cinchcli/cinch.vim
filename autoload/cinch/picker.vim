@@ -27,9 +27,12 @@ function! cinch#picker#open(limit, ...) abort
 
   let l:lines = []
   for l:c in l:clips
-    let l:first = l:c.content_type ==# 'image'
-          \ ? printf('[image · %d B]', l:c.byte_size)
-          \ : split(l:c.content, "\n")[0]
+    if l:c.content_type ==# 'image'
+      let l:first = printf('[image · %d B]', l:c.byte_size)
+    else
+      let l:parts = split(get(l:c, 'content', ''), "\n")
+      let l:first = empty(l:parts) ? '' : l:parts[0]
+    endif
     call add(l:lines, printf('[%s] %s', l:c.source, l:first))
   endfor
 
@@ -66,9 +69,32 @@ endfunction
 " result == -1 means dismissed without selection.
 function! s:popup_callback(id, result) abort
   if a:result <= 0 | return | endif
-  let l:c = s:cinch_picker_clips[a:result - 1]
-  call setreg(g:cinch_push_register, l:c.content)
-  silent normal! p
+  call s:paste_clip(s:cinch_picker_clips[a:result - 1])
+endfunction
+
+" Shared paste path. Mirrors lua/cinch/paste.lua: handles image clips and
+" empty content so we never invoke `normal! p` on an empty register (E353).
+function! s:paste_clip(c) abort
+  if get(a:c, 'content_type', '') ==# 'image'
+    echohl WarningMsg
+    echom '[cinch] image clips cannot be pasted into a text buffer'
+    echohl None
+    return
+  endif
+  let l:content = get(a:c, 'content', '')
+  if l:content ==# ''
+    echohl WarningMsg
+    echom '[cinch] clip is empty — nothing to paste'
+    echohl None
+    return
+  endif
+  let l:reg = g:cinch_push_register
+  call setreg(l:reg, l:content)
+  if l:reg ==# '"'
+    silent normal! p
+  else
+    silent execute 'normal! "' . l:reg . 'p'
+  endif
 endfunction
 
 " Open a scratch buffer and populate it with one display line per clip.
@@ -84,7 +110,6 @@ endfunction
 
 function! s:scratch_choose() abort
   let l:c = b:cinch_clips[line('.') - 1]
-  call setreg(g:cinch_push_register, l:c.content)
   bwipeout!
-  silent normal! p
+  call s:paste_clip(l:c)
 endfunction

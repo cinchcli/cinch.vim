@@ -1,4 +1,5 @@
 local data = require('cinch.data')
+local paste = require('cinch.paste')
 
 local M = {}
 
@@ -32,8 +33,7 @@ function M.open(opts)
         local id = (selected and selected[1] or ''):match('^(%S+)')
         local c = by_id[id]
         if c then
-          vim.fn.setreg(vim.g.cinch_push_register or '"', c.content or '')
-          vim.cmd('normal! p')
+          paste.clip(c)
         end
       end,
     },

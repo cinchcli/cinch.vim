@@ -1,4 +1,5 @@
 local data = require('cinch.data')
+local paste = require('cinch.paste')
 
 local M = {}
 
@@ -29,8 +30,7 @@ function M.open(opts)
     confirm = function(picker, item)
       picker:close()
       if item and item.clip then
-        vim.fn.setreg(vim.g.cinch_push_register or '"', item.clip.content or '')
-        vim.cmd('normal! p')
+        paste.clip(item.clip)
       end
     end,
   })

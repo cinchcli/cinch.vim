@@ -1,4 +1,5 @@
 local data = require('cinch.data')
+local paste = require('cinch.paste')
 
 local M = {}
 
@@ -32,9 +33,8 @@ function M.open(opts)
     local idx = vim.api.nvim_win_get_cursor(win)[1]
     local clip = clips[idx]
     if clip then
-      vim.fn.setreg(vim.g.cinch_push_register or '"', clip.content or '')
       vim.cmd('close')
-      vim.cmd('normal! p')
+      paste.clip(clip)
     end
   end, { buffer = buf, silent = true })
 end
