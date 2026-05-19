@@ -16,9 +16,11 @@ CONTENTS                                                        *cinch-contents*
 1. INTRODUCTION                                                    *cinch-intro*
 
 cinch.vim is the Vim/Neovim front-end for the Cinch remote clipboard CLI.
-Push from yank (yc operator family), pull into Vim over SSH, and browse
-history through whichever picker you already use (snacks.nvim / fzf-lua /
-telescope) or a builtin fallback.
+By default, every ordinary yank (yy, yw, yiw, y$, …) is auto-pushed to the
+relay — no new keys to learn. Pull into Vim over SSH, and browse history
+through whichever picker you already use (snacks.nvim / fzf-lua / telescope)
+or a builtin fallback. An optional yc operator family is available for users
+who prefer explicit push instead of auto-push (see |cinch-mappings|).
 
 ==============================================================================
 2. REQUIREMENTS                                             *cinch-requirements*
@@ -46,7 +48,9 @@ g:cinch_push_register       '"'   Register that triggers auto-push
 g:cinch_binary              cinch Path to the CLI
 g:cinch_default_source      ''    If set, plain :CinchPull pulls --from <src>
 g:cinch_pull_exclude_self   0     If 1, plain :CinchPull adds --exclude-self
-g:cinch_default_mappings    1     If 0, suppress yc-family default keymaps
+g:cinch_default_mappings    0     Set to 1 to install yc/ycc/yC mappings
+                                  (off by default — auto-push covers most
+                                  cases; see |cinch-mappings|)
 g:cinch_picker              auto  auto|snacks|fzf-lua|telescope|builtin
 g:cinch_verbose             0     0 silent, 1 echo, 2 debug
 
@@ -75,13 +79,20 @@ g:cinch_verbose             0     0 silent, 1 echo, 2 debug
 ==============================================================================
 6. MAPPINGS                                                     *cinch-mappings*
 
-Default (gated by g:cinch_default_mappings):
+No new normal-mode keys are installed by default. Your existing yank muscle
+memory (yy, yw, yiw, y$, …) is enough — auto-push sends each yank to the
+relay automatically.
+
+Opt-in yc operator family (enabled with `let g:cinch_default_mappings = 1`):
   yc{motion}   Push the motion's text.
   ycc          Push current line.
   yC           Push to end of line.
   yc (visual)  Push the visual selection.
 
-<Plug> mappings (always present):
+This is for users who prefer explicit push (often combined with
+`let g:cinch_auto_push = 0` so plain yanks stay local).
+
+<Plug> mappings (always present — bind to any key you like):
   <Plug>(cinch-push)
   <Plug>(cinch-push-line)
   <Plug>(cinch-push-eol)
@@ -89,6 +100,12 @@ Default (gated by g:cinch_default_mappings):
   <Plug>(cinch-pull-after)
   <Plug>(cinch-pull-before)
   <Plug>(cinch-history)           (dispatches to Neovim picker or Vim 8 builtin)
+
+Example: >
+  nmap <leader>cp <Plug>(cinch-pull)
+  nmap <leader>cP <Plug>(cinch-pull-after)
+  nmap <leader>ch <Plug>(cinch-history)
+<
 
 ==============================================================================
 7. PICKER                                                        *cinch-picker*
